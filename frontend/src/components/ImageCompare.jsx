@@ -44,9 +44,10 @@ export default function ImageCompare({ original, enhanced }) {
       <img src={enhanced} className="cmp-img cmp-enhanced" alt="enhanced" draggable={false} />
 
       {/* Original clipped */}
-      <div className="cmp-original" style={{ width: `${pos}%` }}>
-        <img src={original} className="cmp-img" alt="original" draggable={false} />
-      </div>
+   {/* Original clipped */}
+<div className="cmp-original" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
+  <img src={original} className="cmp-img" alt="original" draggable={false} />
+</div>
 
       {/* Divider */}
       <div className="cmp-divider" style={{ left: `${pos}%` }}>
