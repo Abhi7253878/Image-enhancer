@@ -1,49 +1,66 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import "./ImageCompare.css";
 
 export default function ImageCompare({ original, enhanced }) {
   const [pos, setPos] = useState(50);
-  const containerRef = useRef(null);
-  const dragging = useRef(false);
+  const [dragging, setDragging] = useState(false);
+  const ref = useRef(null);
 
-  const updatePos = useCallback((clientX) => {
-    const rect = containerRef.current.getBoundingClientRect();
-    const p = Math.min(Math.max(((clientX - rect.left) / rect.width) * 100, 2), 98);
-    setPos(p);
+  const calc = useCallback((clientX) => {
+    const r = ref.current.getBoundingClientRect();
+    return Math.min(Math.max(((clientX - r.left) / r.width) * 100, 1), 99);
   }, []);
 
-  const onMouseDown = (e) => { dragging.current = true; updatePos(e.clientX); };
-  const onMouseMove = (e) => { if (dragging.current) updatePos(e.clientX); };
-  const onMouseUp   = () => { dragging.current = false; };
-  const onTouchMove = (e) => updatePos(e.touches[0].clientX);
+  const onMouseDown = (e) => { setDragging(true); setPos(calc(e.clientX)); };
+  const onTouchStart = (e) => { setDragging(true); setPos(calc(e.touches[0].clientX)); };
+
+  useEffect(() => {
+    if (!dragging) return;
+    const onMove = (e) => {
+      const x = e.touches ? e.touches[0].clientX : e.clientX;
+      setPos(calc(x));
+    };
+    const onUp = () => setDragging(false);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchmove", onMove);
+    window.addEventListener("touchend", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("touchend", onUp);
+    };
+  }, [dragging, calc]);
 
   return (
     <div
-      className="compare-wrap"
-      ref={containerRef}
+      className={`compare ${dragging ? "grabbing" : ""}`}
+      ref={ref}
       onMouseDown={onMouseDown}
-      onMouseMove={onMouseMove}
-      onMouseUp={onMouseUp}
-      onMouseLeave={onMouseUp}
-      onTouchMove={onTouchMove}
+      onTouchStart={onTouchStart}
     >
-      {/* Enhanced (full) */}
-      <img src={enhanced} className="compare-img compare-enhanced" alt="enhanced" draggable={false} />
+      {/* Enhanced full */}
+      <img src={enhanced} className="cmp-img cmp-enhanced" alt="enhanced" draggable={false} />
 
       {/* Original clipped */}
-      <div className="compare-original-clip" style={{ width: `${pos}%` }}>
-        <img src={original} className="compare-img" alt="original" draggable={false} />
+      <div className="cmp-original" style={{ width: `${pos}%` }}>
+        <img src={original} className="cmp-img" alt="original" draggable={false} />
       </div>
 
       {/* Divider */}
-      <div className="compare-handle" style={{ left: `${pos}%` }}>
-        <div className="handle-line" />
-        <div className="handle-knob">⇔</div>
+      <div className="cmp-divider" style={{ left: `${pos}%` }}>
+        <div className="cmp-line" />
+        <div className={`cmp-knob ${dragging ? "active" : ""}`}>
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M6 9H1M12 9h5M6 9l3-3M6 9l3 3M12 9l-3-3M12 9l-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
       </div>
 
       {/* Labels */}
-      <span className="cmp-label cmp-before" style={{ opacity: pos > 20 ? 1 : 0 }}>ORIGINAL</span>
-      <span className="cmp-label cmp-after"  style={{ opacity: pos < 80 ? 1 : 0 }}>ENHANCED</span>
+      <span className="cmp-tag cmp-tag-left"  style={{ opacity: pos > 15 ? 1 : 0 }}>Original</span>
+      <span className="cmp-tag cmp-tag-right" style={{ opacity: pos < 85 ? 1 : 0 }}>Enhanced</span>
     </div>
   );
 }

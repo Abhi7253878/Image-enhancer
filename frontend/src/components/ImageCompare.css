@@ -1,104 +1,116 @@
-.compare-wrap {
+.compare {
   flex: 1;
   position: relative;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 14px;
   border: 1px solid var(--border);
   cursor: col-resize;
   user-select: none;
-  min-height: 300px;
-  background: #0a0a0c;
+  min-height: 320px;
+  background: var(--surface2);
+  box-shadow: var(--shadow-md);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.compare-img {
+.compare.grabbing { cursor: grabbing; }
+
+.cmp-img {
   max-width: 100%;
-  max-height: 100%;
+  max-height: 68vh;
   display: block;
   object-fit: contain;
   pointer-events: none;
+  user-select: none;
 }
 
-.compare-enhanced {
+.cmp-enhanced {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   object-fit: contain;
 }
 
-.compare-original-clip {
+.cmp-original {
   position: absolute;
   inset: 0;
   overflow: hidden;
 }
-
-.compare-original-clip .compare-img {
+.cmp-original .cmp-img {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   object-fit: contain;
 }
 
-.compare-handle {
+/* Divider */
+.cmp-divider {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: 0; bottom: 0;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   pointer-events: none;
-  z-index: 4;
+  z-index: 10;
+  will-change: left;
 }
 
-.handle-line {
-  flex: 1;
-  width: 2px;
-  background: rgba(255,255,255,0.7);
+.cmp-line {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 1.5px;
+  background: rgba(255,255,255,0.75);
+  box-shadow: 0 0 6px rgba(0,0,0,0.4);
 }
 
-.handle-knob {
+.cmp-knob {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 34px;
-  height: 34px;
-  background: white;
+  width: 40px; height: 40px;
   border-radius: 50%;
+  background: #fff;
+  color: #333;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  color: #000;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.6);
+  box-shadow: 0 2px 14px rgba(0,0,0,0.3);
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
 }
 
-.cmp-label {
+.cmp-knob.active,
+.compare:hover .cmp-knob {
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+/* Tags */
+.cmp-tag {
   position: absolute;
   bottom: 14px;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 2px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: opacity 0.2s;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 6px;
   pointer-events: none;
+  transition: opacity 0.2s;
   z-index: 5;
 }
 
-.cmp-before {
+.cmp-tag-left {
   left: 14px;
-  background: rgba(0,0,0,0.6);
-  color: #fff;
+  background: rgba(0,0,0,0.45);
+  color: rgba(255,255,255,0.85);
+  backdrop-filter: blur(4px);
 }
 
-.cmp-after {
+.cmp-tag-right {
   right: 14px;
-  background: rgba(0, 229, 255, 0.15);
-  color: var(--accent);
-  border: 1px solid rgba(0, 229, 255, 0.4);
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px var(--accent-glow);
 }

@@ -1,97 +1,95 @@
 import "./Controls.css";
 
+function Slider({ label, value, min, max, step, onChange, format }) {
+  const pct = ((value - min) / (max - min)) * 100;
+  return (
+    <div className="slider-row">
+      <div className="slider-meta">
+        <span className="slider-label">{label}</span>
+        <span className="slider-value">{format ? format(value) : value}</span>
+      </div>
+      <div className="slider-track-wrap">
+        <input
+          type="range" min={min} max={max} step={step}
+          value={value}
+          onChange={(e) => onChange(+e.target.value)}
+          style={{ "--pct": `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function Controls({ options, onChange, onEnhance, loading, stage }) {
   const set = (key, val) => onChange({ ...options, [key]: val });
 
   return (
     <div className="controls">
-      <div className="ctrl-header">
-        <span className="ctrl-title">ENHANCE SETTINGS</span>
+      <div className="ctrl-section-label">Upscale</div>
+
+      <div className="scale-buttons">
+        {[1, 2, 3, 4].map(v => (
+          <button
+            key={v}
+            className={`scale-btn ${options.scale === v ? "active" : ""}`}
+            onClick={() => set("scale", v)}
+          >
+            {v}×
+          </button>
+        ))}
       </div>
 
-      <div className="ctrl-group">
-        <label className="ctrl-label">
-          Upscale Factor
-          <span className="ctrl-value">{options.scale}×</span>
-        </label>
-        <input
-          type="range" min="1" max="4" step="1"
-          value={options.scale}
-          onChange={(e) => set("scale", +e.target.value)}
-        />
-        <div className="range-ticks">
-          {[1,2,3,4].map(v => (
-            <span key={v} className={options.scale === v ? "tick active" : "tick"}>{v}×</span>
-          ))}
-        </div>
-      </div>
+      <div className="ctrl-divider" />
+      <div className="ctrl-section-label">Adjustments</div>
 
-      <div className="ctrl-group">
-        <label className="ctrl-label">
-          Contrast
-          <span className="ctrl-value">{options.contrast.toFixed(1)}</span>
-        </label>
-        <input
-          type="range" min="0.5" max="2.5" step="0.1"
-          value={options.contrast}
-          onChange={(e) => set("contrast", +e.target.value)}
-        />
-      </div>
+      <Slider label="Contrast"   value={options.contrast}   min={0.5} max={2.5} step={0.05}
+        onChange={v => set("contrast", v)}   format={v => v.toFixed(2)} />
+      <Slider label="Brightness" value={options.brightness} min={0.5} max={2.0} step={0.05}
+        onChange={v => set("brightness", v)} format={v => v.toFixed(2)} />
+      <Slider label="Saturation" value={options.saturation} min={0.0} max={3.0} step={0.05}
+        onChange={v => set("saturation", v)} format={v => v.toFixed(2)} />
 
-      <div className="ctrl-group">
-        <label className="ctrl-label">
-          Brightness
-          <span className="ctrl-value">{options.brightness.toFixed(1)}</span>
-        </label>
-        <input
-          type="range" min="0.5" max="2.0" step="0.1"
-          value={options.brightness}
-          onChange={(e) => set("brightness", +e.target.value)}
-        />
-      </div>
+      <div className="ctrl-divider" />
+      <div className="ctrl-section-label">Processing</div>
 
-      <div className="ctrl-group">
-        <label className="ctrl-label">
-          Saturation
-          <span className="ctrl-value">{options.saturation.toFixed(1)}</span>
+      <div className="toggles">
+        <label className="toggle">
+          <input type="checkbox" checked={options.sharpen}
+            onChange={e => set("sharpen", e.target.checked)} />
+          <div className="toggle-text">
+            <span className="toggle-name">Sharpen</span>
+            <span className="toggle-desc">Unsharp mask on edges</span>
+          </div>
         </label>
-        <input
-          type="range" min="0.0" max="3.0" step="0.1"
-          value={options.saturation}
-          onChange={(e) => set("saturation", +e.target.value)}
-        />
-      </div>
-
-      <div className="ctrl-toggles">
-        <label className="toggle-item">
-          <input
-            type="checkbox"
-            checked={options.sharpen}
-            onChange={(e) => set("sharpen", e.target.checked)}
-          />
-          <span>Unsharp Mask (Sharpen)</span>
-        </label>
-        <label className="toggle-item">
-          <input
-            type="checkbox"
-            checked={options.denoise}
-            onChange={(e) => set("denoise", e.target.checked)}
-          />
-          <span>Bilateral Denoise</span>
+        <label className="toggle">
+          <input type="checkbox" checked={options.denoise}
+            onChange={e => set("denoise", e.target.checked)} />
+          <div className="toggle-text">
+            <span className="toggle-name">Denoise</span>
+            <span className="toggle-desc">Bilateral noise reduction</span>
+          </div>
         </label>
       </div>
 
       <button
-        className="btn-enhance"
+        className="enhance-btn"
         onClick={onEnhance}
         disabled={loading}
       >
         {loading ? (
-          <span>Processing…</span>
+          <>
+            <span className="enhance-spinner" />
+            Processing…
+          </>
         ) : stage === "done" ? (
-          <span>↺ Re-Enhance</span>
+          "Re-enhance"
         ) : (
-          <span>⚡ Enhance Image</span>
+          <>
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+              <path d="M7.5 1v2M7.5 12v2M1 7.5h2M12 7.5h2M3.05 3.05l1.42 1.42M10.53 10.53l1.42 1.42M10.53 3.05l-1.42 1.42M3.05 10.53l1.42 1.42" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+            Enhance
+          </>
         )}
       </button>
     </div>

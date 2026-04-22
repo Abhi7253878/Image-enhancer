@@ -10,33 +10,37 @@ export default function Dropzone({ onFile }) {
   };
 
   const onDrop = useCallback((e) => {
-    e.preventDefault();
-    setDragging(false);
-    const f = e.dataTransfer.files[0];
-    process(f);
+    e.preventDefault(); setDragging(false);
+    process(e.dataTransfer.files[0]);
   }, []);
-
-  const onDragOver = (e) => { e.preventDefault(); setDragging(true); };
-  const onDragLeave = () => setDragging(false);
 
   return (
     <label
       className={`dropzone ${dragging ? "dragging" : ""}`}
       onDrop={onDrop}
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
+      onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+      onDragLeave={() => setDragging(false)}
     >
       <input
-        type="file"
-        accept="image/*"
+        type="file" accept="image/*"
         style={{ display: "none" }}
         onChange={(e) => process(e.target.files[0])}
       />
-      <div className="dz-inner">
-        <div className="dz-icon">⬡</div>
-        <p className="dz-title">Drop image here</p>
-        <p className="dz-sub">or click to browse — JPG, PNG, WebP, BMP</p>
-        <div className="dz-badge">No API key · 100% local model</div>
+      <div className="dz-content">
+        <div className="dz-icon-wrap">
+          <svg className="dz-icon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect x="4" y="6" width="24" height="20" rx="3" stroke="currentColor" strokeWidth="1.5"/>
+            <circle cx="11" cy="13" r="2.5" stroke="currentColor" strokeWidth="1.5"/>
+            <path d="M4 22l6-5 5 4 4-3.5L28 22" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+          </svg>
+        </div>
+        <div className="dz-text">
+          <p className="dz-title">
+            <span className="dz-serif">Drop</span> your image here
+          </p>
+          <p className="dz-sub">or <span className="dz-link">browse files</span></p>
+          <p className="dz-formats">JPG · PNG · WebP · BMP</p>
+        </div>
       </div>
     </label>
   );
