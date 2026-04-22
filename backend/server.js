@@ -4,6 +4,7 @@ const multer = require("multer");
 const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 
 const app = express();
 const PORT = 5000;
@@ -24,13 +25,25 @@ const upload = multer({
 const MODEL_PATH = path.join(__dirname, "../model/enhance.py");
 
 // ─── Helper: run Python model ─────────────────────────────────────────────────
-function runPython(mode, b64Image, options = {}) {
+// Writes image to a temp file to avoid ARG_MAX / ENAMETOOLONG limits
+function runPython(mode, imageBuffer, options = {}) {
   return new Promise((resolve, reject) => {
+    // Write image buffer to a temp file
+    const tmpInput = path.join(os.tmpdir(), `pixlift_in_${Date.now()}.bin`);
+    const tmpOpts  = path.join(os.tmpdir(), `pixlift_opts_${Date.now()}.json`);
+
+    try {
+      fs.writeFileSync(tmpInput, imageBuffer);
+      fs.writeFileSync(tmpOpts, JSON.stringify(options));
+    } catch (e) {
+      return reject(new Error("Failed to write temp files: " + e.message));
+    }
+
     const args = [
       MODEL_PATH,
-      "--mode", mode,
-      "--input", b64Image,
-      "--options", JSON.stringify(options),
+      "--mode",    mode,
+      "--input",   tmpInput,
+      "--options", tmpOpts,
     ];
 
     const py = spawn("python3", args);
@@ -41,6 +54,10 @@ function runPython(mode, b64Image, options = {}) {
     py.stderr.on("data", (d) => (stderr += d.toString()));
 
     py.on("close", (code) => {
+      // Clean up temp files
+      try { fs.unlinkSync(tmpInput); } catch {}
+      try { fs.unlinkSync(tmpOpts);  } catch {}
+
       if (code !== 0) {
         console.error("Python error:", stderr);
         return reject(new Error(stderr || "Python process failed"));
@@ -60,8 +77,7 @@ function runPython(mode, b64Image, options = {}) {
 app.post("/api/analyse", upload.single("image"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No image uploaded" });
-    const b64 = req.file.buffer.toString("base64");
-    const result = await runPython("analyse", b64);
+    const result = await runPython("analyse", req.file.buffer);
     res.json(result);
   } catch (err) {
     console.error(err);
@@ -83,8 +99,7 @@ app.post("/api/enhance", upload.single("image"), async (req, res) => {
       saturation: parseFloat(req.body.saturation || "1.2"),
     };
 
-    const b64 = req.file.buffer.toString("base64");
-    const result = await runPython("enhance", b64, opts);
+    const result = await runPython("enhance", req.file.buffer, opts);
     res.json(result);
   } catch (err) {
     console.error(err);

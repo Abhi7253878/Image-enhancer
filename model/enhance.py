@@ -137,20 +137,26 @@ def enhance_image(img_pil, options):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["analyse", "enhance"], required=True)
-    parser.add_argument("--input",  required=True, help="Base64-encoded image")
-    parser.add_argument("--options", default="{}", help="JSON options for enhance")
+    parser.add_argument("--input",   required=True, help="Path to raw image file")
+    parser.add_argument("--options", default=None,  help="Path to JSON options file")
     args = parser.parse_args()
 
-    # Decode image
-    img_bytes = base64.b64decode(args.input)
+    # Read image from temp file path
+    with open(args.input, "rb") as f:
+        img_bytes = f.read()
     img = Image.open(io.BytesIO(img_bytes))
+
+    # Read options from temp file (if provided)
+    opts = {}
+    if args.options and os.path.exists(args.options):
+        with open(args.options, "r") as f:
+            opts = json.load(f)
 
     if args.mode == "analyse":
         result = analyse_image(img)
         print(json.dumps({"status": "ok", "analysis": result}))
 
     elif args.mode == "enhance":
-        opts = json.loads(args.options)
         before_analysis = analyse_image(img)
         enhanced = enhance_image(img, opts)
         after_analysis  = analyse_image(enhanced)
