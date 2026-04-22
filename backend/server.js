@@ -46,8 +46,7 @@ function runPython(mode, imageBuffer, options = {}) {
       "--options", tmpOpts,
     ];
 
-    const py = spawn("python3", args);
-    let stdout = "";
+const py = spawn("python", args);    let stdout = "";
     let stderr = "";
 
     py.stdout.on("data", (d) => (stdout += d.toString()));
@@ -111,6 +110,6 @@ app.post("/api/enhance", upload.single("image"), async (req, res) => {
 app.get("/api/health", (_, res) => res.json({ status: "ok", model: "local" }));
 
 app.listen(PORT, () => {
-  console.log(`\n🚀  Image Enhancer API running at http://localhost:${PORT}`);
-  console.log(`📦  Model path: ${MODEL_PATH}\n`);
+  console.log(`\n  Image Enhancer API running at http://localhost:${PORT}`);
+  console.log(`  Model path: ${MODEL_PATH}\n`);
 });
