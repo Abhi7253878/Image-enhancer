@@ -135,7 +135,12 @@ Zero network requests are made for image processing.
 → Scale factor 4× on a large image takes more time — try 2× first.
 
 ---
-
+<p align="center">
+  Made with ❤️ by <br><br>
+  <a href="https://github.com/anishkumar0504">ANISH</a><br>
+  <a href="https://github.com/Abhi7253878">Abhishek</a><br>
+  <a href="https://github.com/Ashishkr7079">Ashish</a>
+</p>
 ## Tips
 
 - Drag the slider on the result to compare before/after
